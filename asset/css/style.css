@@ -1,0 +1,18 @@
+.brand-text{
+    text-align: center !important;
+    margin-left: 10px !important;
+}
+
+.main-footer{
+    text-align: center !important;
+    font-weight: bold;
+    color: black;
+}
+
+table thead{
+    text-align: center;
+}
+
+textarea{
+    resize: none;
+}

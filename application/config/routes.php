@@ -52,3 +52,14 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 $route['default_controller'] = 'login';
 $route['404_override'] = '';
 $route['translate_uri_dashes'] = FALSE;
+
+/* Custom Routes */
+$route['Module'] = 'home/index';
+$route['Module/Books'] = 'book/index';
+$route['Module/Members'] = 'member/index';
+$route['Module/Loan'] = 'borrow/index';
+$route['Module/History'] = 'home/history';
+
+/* Actions */
+$route['Source/do/Member/(:any)'] = 'member/$1';
+$route['Source/do/Book/(:any)'] = 'book/$1';

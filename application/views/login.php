@@ -1,49 +1,98 @@
+
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>Login Page</title>
-        
-        <!-- jQuery -->
-        <script src="<?= base_url('asset/jquery/jquery-3.4.1.min.js'); ?>"></script>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Perpustkaan GKI Harapan Indah</title>
+  <!-- Tell the browser to be responsive to screen width -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Login Page">
+  <meta name="author" content="Vincentius Gerardo">
+    
+  <!-- jQuery -->
+  <script src="<?= base_url('asset/jquery/jquery.min.js') ?>"></script>
+  <!-- Bootstrap 4 -->
+  <script src="<?= base_url('asset/bootstrap/bootstrap.bundle.min.js') ?>"></script>
+  <!-- AdminLTE App -->
+  <script src="<?= base_url('asset/adminlte/js/adminlte.min.js') ?>"></script>
 
-        <!-- Bootstrap -->
-        <link rel="stylesheet" type="text/css" href="<?= base_url('asset/bootstrap/bootstrap.min.css'); ?>"/>
-        <script src="<?= base_url('asset/bootstrap/bootstrap.bundle.min.js'); ?>"></script>
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="<?= base_url('asset/fontawesome-free/css/all.min.css') ?>">
+  <!-- Ionicons -->
+  <link rel="stylesheet" href="<?= base_url('asset/ionicons/ionicons.min.css') ?>">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="<?= base_url('asset/adminlte/css/adminlte.min.css') ?>">
+  <!-- Google Font: Source Sans Pro -->
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+  <!-- Sweetalert -->
+  <script src="<?= base_url('asset/sweetalert/sweetalert.min.js') ?>"></script>
+  
+  <!-- For Login Error Alert  -->
+  <script>
+    <?php if($this->session->flashdata('alert') != null) { ?>
+      $(function(){
+        swal({
+          icon: "<?= $this->session->flashdata('alert') ?>",
+          title: "<?= $this->session->flashdata('msg') ?>",
+          button: "Ok"
+        });
+      });
+    <?php } ?>
+  </script>
 
-        <!-- custom theme for login page -->
-        <link rel="stylesheet" type="text/css" href="<?= base_url('asset/css/login.css'); ?>"/>
-    </head>
-    <body>
-        <div class="container">
-            <div class="row">
-            <div class="col-sm-9 col-md-7 col-lg-5 mx-auto">
-                <div class="card card-signin my-5">
-                <div class="card-body">
-                    <h5 class="card-title text-center">Sign In</h5>
-                    <form class="form-signin">
-                    <div class="form-label-group">
-                        <input type="text" name="inputUsername" class="form-control" placeholder="Username" required autofocus>
-                        <label for="inputUsername">Username</label>
-                    </div>
+  <!-- Style for background -->
+  <style>
+    body{
+      margin:0;
+      background-image: url("<?= base_url('asset/image/background1.png') ?>") !important;
+      /* background-color: #cccccc;
+      height: 500px; */
+      background-position: center !important;
+      background-repeat: no-repeat !important;
+      background-size: cover !important;
+      position: relative !important;
+    }
+    .login-logo{
+      color: white !important;
+    }
+  </style>
+</head>
+<body class="hold-transition login-page">
+<div class="login-box">
+  <div class="login-logo">
+    <strong>Perpustkaan GKI HI</strong>
+  </div>
+  <!-- /.login-logo -->
+  <div class="card">
+    <div class="card-body login-card-body">
 
-                    <div class="form-label-group">
-                        <input type="password" name="inputPassword" class="form-control" placeholder="Password" required>
-                        <label for="inputPassword">Password</label>
-                    </div>
-
-                    <div class="custom-control custom-checkbox mb-3">
-                        <input type="checkbox" class="custom-control-input" id="customCheck1">
-                        <label class="custom-control-label" for="customCheck1">Remember password</label>
-                    </div>
-                    <button class="btn btn-lg btn-primary btn-block text-uppercase" type="submit">Sign in</button>
-                    <hr class="my-4">
-                    <button class="btn btn-lg btn-google btn-block text-uppercase" type="submit"><i class="fab fa-google mr-2"></i> Sign in with Google</button>
-                    <button class="btn btn-lg btn-facebook btn-block text-uppercase" type="submit"><i class="fab fa-facebook-f mr-2"></i> Sign in with Facebook</button>
-                    </form>
-                </div>
-                </div>
+      <form action="<?= base_url('Login/doLogin') ?>" method="post">
+        <div class="input-group mb-3">
+        <input type="text" id="inputEmail" class="form-control" placeholder="Username" required="required" autofocus="autofocus" name="inputUser">
+          <div class="input-group-append">
+            <div class="input-group-text">
+              <span class="fas fa-user"></span>
             </div>
-            </div>
+          </div>
         </div>
-    </body>
+        <div class="input-group mb-3">
+        <input type="password" id="inputPassword" class="form-control" placeholder="Password" required="required" name="inputPass">
+          <div class="input-group-append">
+            <div class="input-group-text">
+              <span class="fas fa-lock"></span>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+            <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+        </div>
+      </form>
+    </div>
+    <!-- /.login-card-body -->
+  </div>
+</div>
+<!-- /.login-box -->
+
+</body>
 </html>
