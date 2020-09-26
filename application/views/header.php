@@ -69,6 +69,10 @@
   <!-- Animate css -->
   <link rel="stylesheet" href="<?= base_url('asset/animate/animate.min.css') ?>">
 
+  <!-- Stepper -->
+  <link rel="stylesheet" href="<?= base_url('asset/bs-stepper/bs-stepper.min.css') ?>">
+  <script src="<?= base_url('asset/bs-stepper/bs-stepper.min.js') ?>"></script>
+
   <!-- Custom script -->
   <link rel="stylesheet" href="<?= base_url('asset/css/style.css') ?>">
   <script src="<?= base_url('asset/js/script.js') ?>"></script>
@@ -169,7 +173,7 @@
             <a href="#" class="nav-link">
               <i class="nav-icon fas fa-list"></i>
               <p>
-                Transactions
+                Book Loan
                 <i class="right fas fa-angle-left"></i>
               </p>
             </a>
@@ -181,7 +185,7 @@
                 </a>
               </li>
               <li class="nav-item">
-                <a href="../../index2.html" class="nav-link">
+                <a href="<?= base_url('Module/Loan/Return') ?>" class="nav-link">
                   <i class="fas fa-download nav-icon"></i>
                   <p>Return</p>
                 </a>
@@ -194,14 +198,14 @@
               </li>
             </ul>
           </li>
-          <li class="nav-item">
+          <!-- <li class="nav-item">
             <a href="<?= base_url('Module/Members') ?>" class="nav-link">
               <i class="nav-icon fas fa-clipboard-list"></i>
               <p>
                 Inventory Taking
               </p>
             </a>
-          </li>
+          </li> -->
           <li class="nav-item">
             <a href="<?= base_url('Module/History') ?>" class="nav-link">
               <i class="nav-icon fas fa-history"></i>

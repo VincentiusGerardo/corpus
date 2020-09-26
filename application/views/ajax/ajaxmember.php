@@ -10,19 +10,19 @@
             </div>
         </div> -->
             <div class="form-group row">
-                <label for="inputEmail3" class="col-sm-1 col-form-label">Member Name</label>
+                <label for="inputEmail3" class="col-sm-3 col-form-label">Member Name</label>
                 <div class="col-sm-4">
                     <span class="form-control-plaintext"><?= $r->NamaMember ?></span>
                 </div>
             </div>
             <div class="form-group row">
-                <label for="inputEmail3" class="col-sm-1 col-form-label">Phone Number</label>
+                <label for="inputEmail3" class="col-sm-3 col-form-label">Phone Number</label>
                 <div class="col-sm-4">
                     <span class="form-control-plaintext"><?= $r->NoHP ?></span>
                 </div>
             </div>
             <div class="form-group row">
-                <label for="inputEmail3" class="col-sm-1 col-form-label">Member Address</label>
+                <label for="inputEmail3" class="col-sm-3 col-form-label">Member Address</label>
                 <div class="col-sm-4">
                     <span class="form-control-plaintext"><?= $r->Alamat ?></span>
                 </div>
