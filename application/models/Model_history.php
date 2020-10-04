@@ -14,4 +14,13 @@
             $q->free_result();
             return $res;
         }
+
+        public function getHistoryBySelection($type){
+            $sp = "CALL sp_history_by_selection(?)";
+            $q = $this->db->query($sp, array('historyType' => $type));
+            $res = $q->result();
+			$q->next_result();
+            $q->free_result();
+            return $res;
+        }
     }

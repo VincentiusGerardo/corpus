@@ -24,12 +24,13 @@
             return $res->Result;
         }
 
-        public function getAllPeminjaman(){
-
-        }
-
         public function getLateReturn(){
-
+            $sp = "CALL sp_pengembalian_terlambat()";
+            $q = $this->db->query($sp);
+            $res = $q->result();
+			$q->next_result();
+            $q->free_result();
+            return $res;
         }
 
         public function getBookBorrowed($id){

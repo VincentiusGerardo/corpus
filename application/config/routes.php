@@ -59,6 +59,7 @@ $route['Module/Books'] = 'book/index';
 $route['Module/Members'] = 'member/index';
 $route['Module/Loan'] = 'borrow/index';
 $route['Module/Loan/Return'] = 'borrow/returnLoan';
+$route['Module/Loan/LateReturn'] = 'borrow/lateReturn';
 $route['Module/History'] = 'home/history';
 
 /* Actions */

@@ -138,4 +138,11 @@ class Borrow extends CI_Controller
         $this->load->view('return');
         $this->load->view('footer');
     }
+
+    public function lateReturn(){
+        $data['lr'] = $this->mPinjamKembali->getLateReturn();
+        $this->load->view('header');
+        $this->load->view('latereturn', $data);
+        $this->load->view('footer');
+    }
 }

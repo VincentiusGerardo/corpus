@@ -10,6 +10,7 @@
             $this->load->model('Model_book', 'mBook');
             $this->load->model('Model_member', 'mMember');
             $this->load->model('Model_PinjamKembali', 'mPinjamKembali');
+            $this->load->model('Model_history', 'mHistory');
         }
 
         public function index(){
@@ -32,5 +33,11 @@
             $bookID = $this->input->post('book');
             $data['res'] = $this->mPinjamKembali->getBookBorrowed($bookID);
             $this->load->view('ajax/ajaxfine', $data);
+        }
+
+        public function getHistory(){            
+            $code = $this->input->post('historyCode');
+            $data['res'] = $this->mHistory->getHistoryBySelection($code);
+            $this->load->view('ajax/ajaxhistory', $data);
         }
     }
