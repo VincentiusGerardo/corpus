@@ -45,4 +45,13 @@
 				return false;
 			}
 		}
+
+		public function updatePassword($data){
+            $sp = "CALL sp_change_password(?,?,?,?)";
+            $q = $this->db->query($sp, $data);
+            $res = $q->row();
+			$q->next_result();
+            $q->free_result();
+            return $res->Result;
+		}
 	}

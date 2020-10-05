@@ -39,19 +39,19 @@
           </button>
         </div>
         <div class="modal-body">
-          <form action="<?= base_url('Admin/Source/do/ChangePassword') ?>" method="post" enctype="multipart/form-data">
-            <input type="hidden" name="id" value="<?= $this->session->userdata('username') ?>">
+          <form action="<?= base_url('Login/changePassword') ?>" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="username" value="<?= $this->session->userdata('username') ?>">
             <div class="form-group">
               <label for="">Current Password</label>
-              <input type="password" class="form-control" name="pass">
+              <input type="password" class="form-control" name="currPass" required>
             </div>
             <div class="form-group">
               <label for="">New Password</label>
-              <input type="password" class="form-control" name="passN">
+              <input type="password" class="form-control" name="newPass" required>
             </div>
             <div class="form-group">
               <label for="">Repeat Password</label>
-              <input type="password" class="form-control" name="passR">
+              <input type="password" class="form-control" name="repeatPass" required>
             </div>
         </div>
         <div class="modal-footer">

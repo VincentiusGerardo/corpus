@@ -1,3 +1,59 @@
+<script>
+  $(function() {
+    // Initiate table
+    $('#tableLateReturn').DataTable({
+      "paging": true,
+      "searching": true,
+      "lengthChange": false,
+      "ordering": true,
+      "info": true,
+      "autoWidth": false,
+      "columnDefs": [{
+          "orderable": false,
+          "targets": 12
+        },
+
+      ],
+      buttons: [{
+          text: '<i class="fas fa-plus"></i> Add Book',
+          className: "btn btn-primary",
+          action: function() {
+            $('#modalAdd').modal('show');
+          }
+        },
+        {
+          text: '<i class="fas fa-file-excel"></i> Export to Excel',
+          title: 'Buku Perpustakaan GKI HI ' + moment().format('DD MMMM YYYY HH.mm.ss'),
+          extend: 'excelHtml5',
+          className: 'btn-success',
+          exportOptions: {
+            columns: [0, 1, 2, 3]
+          }
+        },
+        {
+          text: '<i class="fas fa-file-pdf"></i> Export to PDF',
+          extend: 'pdfHtml5',
+          title: 'Buku Perpustakaan GKI HI ' + moment().format('DD MMMM YYYY HH.mm.ss'),
+          className: 'btn-danger',
+          exportOptions: {
+            columns: [0, 1, 2, 3]
+          }
+        },
+        {
+          text: '<i class="fas fa-print"></i> Print',
+          extend: 'print',
+          className: 'btn-default',
+          exportOptions: {
+            columns: [0, 1, 2, 3]
+          }
+        }
+      ],
+      dom: "<'row'<'col-sm-12 col-md-6'B><'col-sm-12 col-md-6'f>>" +
+        "<'row'<'col-sm-12'tr>>" +
+        "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+    });
+  });
+</script>
 <style>
     table td:first-child,
     table td:last-child,
@@ -7,56 +63,6 @@
         text-align: center;
     }
 </style>
-
-<script>
-    $(function() {
-        $('#tableLateReturn').DataTable({
-            "paging": true,
-            "searching": true,
-            "lengthChange": false,
-            "ordering": true,
-            "info": true,
-            "autoWidth": false,
-            "columnDefs": [{
-                    "orderable": false,
-                    "targets": 12
-                },
-
-            ],
-            buttons: [{
-                    text: '<i class="fas fa-file-excel"></i> Export to Excel',
-                    title: 'Buku Perpustakaan GKI HI ' + moment().format('DD MMMM YYYY HH.mm.ss'),
-                    extend: 'excelHtml5',
-                    className: 'btn-success',
-                    exportOptions: {
-                        columns: [0, 1, 2, 3]
-                    }
-                },
-                {
-                    text: '<i class="fas fa-file-pdf"></i> Export to PDF',
-                    extend: 'pdfHtml5',
-                    title: 'Buku Perpustakaan GKI HI ' + moment().format('DD MMMM YYYY HH.mm.ss'),
-                    className: 'btn-danger',
-                    exportOptions: {
-                        columns: [0, 1, 2, 3]
-                    }
-                },
-                {
-                    text: '<i class="fas fa-print"></i> Print',
-                    extend: 'print',
-                    className: 'btn-default',
-                    exportOptions: {
-                        columns: [0, 1, 2, 3]
-                    }
-                }
-            ],
-            dom: 
-            "<'row'<'col-sm-12 col-md-6'B><'col-sm-12 col-md-6'f>>" +
-            "<'row'<'col-sm-12'tr>>" +
-            "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
-        });
-    });
-</script>
 <!-- Content Header (Page header) -->
 <section class="content-header">
     <div class="container-fluid">

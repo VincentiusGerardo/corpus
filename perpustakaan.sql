@@ -1,14 +1,13 @@
 -- phpMyAdmin SQL Dump
--- version 5.0.1
+-- version 5.0.2
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 07, 2020 at 06:46 PM
--- Server version: 10.4.11-MariaDB
--- PHP Version: 7.4.1
+-- Waktu pembuatan: 05 Okt 2020 pada 13.07
+-- Versi server: 10.4.11-MariaDB
+-- Versi PHP: 7.4.4
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-SET AUTOCOMMIT = 0;
 START TRANSACTION;
 SET time_zone = "+00:00";
 
@@ -24,7 +23,7 @@ SET time_zone = "+00:00";
 
 DELIMITER $$
 --
--- Procedures
+-- Prosedur
 --
 CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_books_cud` (IN `idBuku` INT, IN `namaBuku` TEXT, IN `namaPengarang` TEXT, IN `namaPenerbit` TEXT, IN `tahunTerbit` INT(4), IN `idKlasifikasi` VARCHAR(25), IN `flagPinjam` BOOLEAN, IN `idKategori` INT, IN `idISBN` VARCHAR(13), IN `unitPrice` DECIMAL(18,2), IN `serialNumber` VARCHAR(255), IN `idJilid` INT, IN `currentUser` VARCHAR(255), IN `flag` BOOLEAN)  BEGIN
     DECLARE hasil int;
@@ -123,6 +122,17 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_book_select_all` ()  BEGIN
 FROM buku a, kategori b
 WHERE a.ID_Kategori = b.ID_Kategori AND
 a.FlagActive = 1;
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_change_password` (IN `idMember` INT, IN `userName` TEXT, IN `newPassword` TEXT, IN `currentUser` TEXT)  BEGIN
+  DECLARE hasil int;
+  UPDATE login SET Password = newPassword WHERE Username = userName AND ID_Login = idMember;
+  SET hasil = 1;
+  SELECT hasil AS Result;
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_history_by_selection` (IN `historyType` CHAR(5))  BEGIN
+  SELECT * FROM history WHERE RefCode = historyType ORDER BY CreatedDate DESC;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_history_insert` (`historyRefID` INT, `historyRefCode` CHAR(5), `historyDetail` TEXT, `currentUser` VARCHAR(255))  BEGIN
@@ -292,12 +302,13 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_peminjaman` (IN `idPeminjaman` I
             TanggalKembali,
             0
         );
+        SET idPeminjaman = LAST_INSERT_ID();
         SELECT NamaBuku into bookName from buku where FlagActive = 1 AND ID_Buku = idBuku;
         SELECT NamaMember into memberName from member where FlagActive = 1 AND ID_Member = idMember;
+        UPDATE buku SET FlagPinjam = 1 WHERE ID_Buku = idBuku;
         SET hasil = 1;
-        SET historyDesc = CONCAT(NamaMember, ' borrowed a book called ', currentUser);
-        SET idBuku = LAST_INSERT_ID();
-        CALL sp_history_insert(idMember, hisCode,historyDesc, currentUser);
+        SET historyDesc = CONCAT(memberName, ' borrowed a book called ', bookName);
+        CALL sp_history_insert(idPeminjaman, hisCode,historyDesc, currentUser);
         SELECT hasil AS Result;
     END IF;
 END$$
@@ -311,7 +322,8 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_peminjaman_select_all` ()  BEGIN
         FROM peminjaman a INNER JOIN buku b 
         ON  a.ID_Buku = b.ID_Buku
     ) aa INNER JOIN member bb 
-    ON aa.ID_Member = bb.ID_Member;
+    ON aa.ID_Member = bb.ID_Member
+    ORDER BY aa.TanggalPinjam DESC;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_peminjaman_select_by_book` (`idBuku` INT)  BEGIN
@@ -324,7 +336,9 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_peminjaman_select_by_book` (`idB
         ON  a.ID_Buku = b.ID_Buku
     ) aa INNER JOIN member bb 
     ON aa.ID_Member = bb.ID_Member
-    WHERE aa.ID_Buku = idBuku;
+    WHERE aa.ID_Buku = idBuku
+    ORDER BY aa.TanggalPinjam DESC
+    ;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_peminjaman_select_by_id_member` (`idMember` INT)  BEGIN
@@ -337,7 +351,53 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_peminjaman_select_by_id_member` 
         ON  a.ID_Buku = b.ID_Buku
     ) aa INNER JOIN member bb 
     ON aa.ID_Member = bb.ID_Member
-    WHERE aa.ID_Member = idMember;
+    WHERE aa.ID_Member = idMember
+    ORDER BY aa.TanggalPinjam DESC;
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_pengembalian` (IN `idPeminjaman` INT, IN `idBuku` INT, IN `memberName` TEXT, IN `returnDate` DATE, IN `isLate` BOOLEAN, IN `totalDays` INT, IN `totalFine` INT, IN `currentUser` TEXT)  BEGIN
+    DECLARE hasil int;
+    DECLARE historyDesc text;
+    DECLARE hisCode char(5);
+    DECLARE bookName text;
+    SET hisCode = 'KMBLI';
+    
+    IF isLate = 1 THEN 
+      INSERT INTO denda(ID_Peminjaman, ID_Buku, TanggalKembali, TotalDays, TotalDenda) VALUES(idPeminjaman, idBuku, returnDate, totalDays, totalFine);
+      UPDATE buku SET FlagPinjam = 0 WHERE ID_Buku = idBuku;
+      UPDATE peminjaman SET FlagSudahKembali = 1 WHERE ID_Peminjaman = idPeminjaman;
+      SET hasil = 1;
+    ELSE
+      UPDATE buku SET FlagPinjam = 0 WHERE ID_Buku = idBuku;
+      UPDATE peminjaman SET FlagSudahKembali = 1 WHERE ID_Peminjaman = idPeminjaman;
+      SET hasil = 1;
+    END IF;
+    SELECT NamaBuku into bookName from buku where FlagActive = 1 AND ID_Buku = idBuku;
+    SET historyDesc = CONCAT(memberName, ' returned a book called ', bookName);
+    CALL sp_history_insert(idPeminjaman, hisCode,historyDesc, currentUser);
+    SELECT hasil AS Result;
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_pengembalian_select_book` (IN `idBuku` INT)  BEGIN
+  SELECT  c.ID_Peminjaman, c.ID_Member, a.ID_Buku, a.NamaBuku, d.NamaMember, c.TanggalPinjam, c.TanggalKembali, DATE_FORMAT(c.TanggalKembali, "%d-%m-%Y") as TanggalKembaliDisplay
+  FROM buku a, kategori b, peminjaman c, member d
+  WHERE a.ID_Kategori = b.ID_Kategori
+  AND a.ID_Buku = c.ID_Buku
+  AND c.ID_Member = d.ID_Member
+  AND a.FlagActive = 1 
+  AND a.ID_Buku = idBuku
+  AND c.FlagSudahKembali = FALSE AND a.FlagPinjam = TRUE
+  ORDER BY c.TanggalPinjam DESC
+  LIMIT 1;
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_pengembalian_terlambat` ()  BEGIN
+  SELECT a.ID_Denda, d.NamaMember, b.NamaBuku, c.TanggalPinjam, a.TanggalKembali, a.TotalDays, a.TotalDenda
+  FROM denda a, buku b, peminjaman c, member d
+  WHERE a.ID_Buku = b.ID_Buku
+  AND a.ID_Peminjaman = c.ID_Peminjaman
+  AND c.ID_Member = d.ID_Member
+  ORDER BY a.TanggalKembali DESC;
 END$$
 
 DELIMITER ;
@@ -345,7 +405,7 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
--- Table structure for table `buku`
+-- Struktur dari tabel `buku`
 --
 
 CREATE TABLE `buku` (
@@ -365,17 +425,17 @@ CREATE TABLE `buku` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
--- Dumping data for table `buku`
+-- Dumping data untuk tabel `buku`
 --
 
 INSERT INTO `buku` (`ID_Buku`, `NamaBuku`, `NamaPengarang`, `NamaPenerbit`, `TahunTerbit`, `ID_Klasifikasi`, `FlagPinjam`, `ID_Kategori`, `ID_ISBN`, `UnitPrice`, `SerialNumber`, `ID_Jilid`, `FlagActive`) VALUES
 (20150001, 'Mengapa Daud Berani?', 'Youd, Pauline', 'Jakarta, BPK Gunung Mulia', 2001, '220.9 You m', b'0', 0, '9789792905199', '10.00', '0', 0, 1),
-(20150002, 'Mengapa Sara Tertawa?', 'Youd, Pauline', 'Jakarta, BPK Gunung Mulia', 2001, '220.9 You m', b'0', 0, '-', '300000.00', '-', 0, 1),
-(20150003, 'Mengapa Yeremia Sedih?', 'Youd, Pauline', 'Jakarta, BPK Gunung Mulia', 2001, '220.9 You m', b'0', 0, NULL, '0.00', '', 0, 1),
-(20150004, 'Keluar dari Mesir', 'Kees de Kort', 'Jakarta, LAI', 2012, '220.9 Kee k', b'0', 2, NULL, '0.00', '', 0, 1),
+(20150002, 'Mengapa Sara Tertawa?', 'Youd, Pauline', 'Jakarta, BPK Gunung Mulia', 2001, '220.9 You m', b'1', 0, '-', '300000.00', '-', 0, 1),
+(20150003, 'Mengapa Yeremia Sedih?', 'Youd, Pauline', 'Jakarta, BPK Gunung Mulia', 2001, '220.9 You m', b'1', 0, NULL, '0.00', '', 0, 1),
+(20150004, 'Keluar dari Mesir', 'Kees de Kort', 'Jakarta, LAI', 2012, '220.9 Kee k', b'1', 2, NULL, '0.00', '', 0, 1),
 (20150005, 'Yakub dan Esau', 'Kees de Kort', 'Jakarta, LAI', 2012, '220.9 Kee y', b'1', 2, NULL, '0.00', '', 0, 1),
-(20150006, 'Anak yang Hilang', 'Kees de Kort', 'Jakarta, LAI', 2012, '232 Kee a', b'1', 2, NULL, '0.00', '', 0, 1),
-(20150007, 'Pesta Kawin di Kana', 'Kees de Kort', 'Jakarta, LAI', 2012, '220.9 Kee p', b'0', 2, NULL, '0.00', '', 0, 1),
+(20150006, 'Anak yang Hilang', 'Kees de Kort', 'Jakarta, LAI', 2012, '232 Kee a', b'0', 2, NULL, '0.00', '', 0, 1),
+(20150007, 'Pesta Kawin di Kana', 'Kees de Kort', 'Jakarta, LAI', 2012, '220.9 Kee p', b'1', 2, NULL, '0.00', '', 0, 1),
 (20150008, 'Tuhan Yesus dan Pengikut-pengikutNya', 'Kees de Kort', 'Jakarta, LAI', 2012, '220.9 Kee.t', b'0', 2, NULL, '0.00', '', 0, 1),
 (20150009, 'Saulus', 'Kees de Kort', 'Jakarta, LAI', 2012, '220.9 Kee s', b'0', 2, NULL, '0.00', '', 0, 1),
 (20150010, 'Yesus Naik ke Surga', 'Kees de Kort', 'Jakarta, LAI', 2012, '220.9 Kee y', b'0', 2, NULL, '0.00', '', 0, 1),
@@ -1588,7 +1648,7 @@ INSERT INTO `buku` (`ID_Buku`, `NamaBuku`, `NamaPengarang`, `NamaPenerbit`, `Tah
 (20181213, 'Jalan Salib', 'Burrin, Angela M', 'Jakarta, BPK Gunung Mulia', 2017, '220.9 Bur j', b'0', 0, '9786022313915', '0.00', '', 0, 1),
 (20181214, 'Kata Yesus kepadaku tentang PASKAH', 'Burrin, Angela M', 'Jakarta, BPK Gunung Mulia', 2017, '220.9 Bur k', b'0', 0, '9786022313939', '0.00', '', 0, 1),
 (20181215, 'Easter Joanna! Allah Membuat Setiap Pribadi Istimewa', 'Tjiel, Prie', 'Jakarta, Elex Media Komputindo', 2018, '248 Tji e', b'0', 0, '9786020457765', '0.00', '', 0, 1),
-(20181216, 'Ensiklopedia Anak Hebat : Tubuh Kita ', 'Seung-hwi, Son', 'Jakarta, Bhuana Ilmu Populer', 2017, '611 Seu e', b'0', 0, '9786022491347', '0.00', '', 0, 1),
+(20181216, 'Ensiklopedia Anak Hebat : Tubuh KitaÂ ', 'Seung-hwi, Son', 'Jakarta, Bhuana Ilmu Populer', 2017, '611 Seu e', b'0', 0, '9786022491347', '0.00', '', 0, 1),
 (20181217, 'Why People : Nelson Mandela', 'Jae-Woong, Yoon', 'Jakarta, Elex Media Komputindo', 2018, '920 Jae n', b'0', 0, '9786020458267', '0.00', '', 0, 1),
 (20181218, 'Why Country : FRANCE', 'NAM, Chunja', 'Jakarta, Gramedia', 2016, '945 Nam f', b'1', 0, '9786020280783', '0.00', '', 0, 1),
 (20181219, 'Seri Kisah Alkitab 1', 'Fussenegger, Gertrud', 'Obor', 2017, '220 Fus s', b'0', 0, '', '0.00', '', 0, 1),
@@ -1634,7 +1694,7 @@ INSERT INTO `buku` (`ID_Buku`, `NamaBuku`, `NamaPengarang`, `NamaPenerbit`, `Tah
 (20191259, 'Tokoh Terkenal dalam Alkitab: Yesus Anak Allah', 'Syauta, C. John', 'Immanuel', 2014, '220 Sya t', b'0', 0, '9786028537735', '0.00', '', 0, 1),
 (20191260, 'Tokoh Terkenal dalam Alkitab: Yohanes Pembaptis Menyiapkan Jalan bagi Tuhan', 'Syauta, C. John', 'Immanuel', 2014, '220 Sya t', b'0', 0, '9786028537957', '0.00', '', 0, 1),
 (20191261, 'Yakub dan Esau', 'Kort, Kees de', 'LAI', 2012, '220 Kor y', b'0', 0, '9789794630242', '0.00', '', 0, 1),
-(20191262, 'Kenapa Ya? (2)', 'Verthé, Valentin', 'Bhuana Ilmu Populer', 2018, '503 Ver k', b'0', 0, '9786022494591', '0.00', '', 0, 1),
+(20191262, 'Kenapa Ya? (2)', 'VerthÃ©, Valentin', 'Bhuana Ilmu Populer', 2018, '503 Ver k', b'0', 0, '9786022494591', '0.00', '', 0, 1),
 (20191263, 'Kenapa Ya? (4)', 'Gillet, Emilie', 'Bhuana Ilmu Populer', 2018, '503 Gil k', b'0', 0, '9786023941179', '0.00', '', 0, 1),
 (20191264, 'Allah itu Narsis', 'Harmakaputra, Hans Abdiel', 'Grafika Kreasindo', 2015, '231 Har a', b'0', 2, '9786020890012', '0.00', '', 0, 1),
 (20191265, 'Berbagi Ruang Kehidupan 2', 'Binawarga', 'Binawarga', 2016, '242 Bin b', b'0', 0, '9786029265460', '0.00', '', 0, 1),
@@ -1839,7 +1899,29 @@ INSERT INTO `buku` (`ID_Buku`, `NamaBuku`, `NamaPengarang`, `NamaPenerbit`, `Tah
 -- --------------------------------------------------------
 
 --
--- Table structure for table `history`
+-- Struktur dari tabel `denda`
+--
+
+CREATE TABLE `denda` (
+  `ID_Denda` int(11) NOT NULL,
+  `ID_Peminjaman` varchar(255) DEFAULT NULL,
+  `ID_Buku` int(8) DEFAULT NULL,
+  `TanggalKembali` date DEFAULT NULL,
+  `TotalDays` int(11) DEFAULT NULL,
+  `TotalDenda` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Dumping data untuk tabel `denda`
+--
+
+INSERT INTO `denda` (`ID_Denda`, `ID_Peminjaman`, `ID_Buku`, `TanggalKembali`, `TotalDays`, `TotalDenda`) VALUES
+(1, '14321', 20150006, '2020-09-27', 15, 1000);
+
+-- --------------------------------------------------------
+
+--
+-- Struktur dari tabel `history`
 --
 
 CREATE TABLE `history` (
@@ -1852,7 +1934,7 @@ CREATE TABLE `history` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
--- Dumping data for table `history`
+-- Dumping data untuk tabel `history`
 --
 
 INSERT INTO `history` (`ID_History`, `RefID`, `RefCode`, `HistoryDesc`, `CreatedBy`, `CreatedDate`) VALUES
@@ -1905,12 +1987,20 @@ INSERT INTO `history` (`ID_History`, `RefID`, `RefCode`, `HistoryDesc`, `Created
 (47, 20150002, 'BOOKS', 'Mengapa Sara Tertawa? updated by Vincentius Gerardo', 'Vincentius Gerardo', '2020-03-08 00:26:20'),
 (48, 20201461, 'BOOKS', 'testing updated by Vincentius Gerardo', 'Vincentius Gerardo', '2020-03-08 00:27:14'),
 (49, 20150001, 'BOOKS', 'Mengapa Daud Berani? deleted by Vincentius Gerardo', 'Vincentius Gerardo', '2020-03-08 00:31:35'),
-(50, 20150002, 'BOOKS', 'Mengapa Sara Tertawa? deleted by Vincentius Gerardo', 'Vincentius Gerardo', '2020-03-08 00:31:53');
+(50, 20150002, 'BOOKS', 'Mengapa Sara Tertawa? deleted by Vincentius Gerardo', 'Vincentius Gerardo', '2020-03-08 00:31:53'),
+(51, 15001, 'PNJAM', 'Kevin Christian, S.Kom borrowed a book called Vincentius Gerardo', 'Vincentius Gerardo', '2020-09-26 19:52:21'),
+(52, 15002, 'PNJAM', 'Lydiawati Satyana borrowed a book called Mengapa Sara Tertawa?', 'Vincentius Gerardo', '2020-09-26 19:55:47'),
+(53, 15003, 'PNJAM', 'Christa Aurora Myliniani borrowed a book called Mengapa Yeremia Sedih?', 'Vincentius Gerardo', '2020-09-26 20:19:22'),
+(54, 15004, 'PNJAM', 'Theo Philus borrowed a book called Keluar dari Mesir', 'Vincentius Gerardo', '2020-09-26 20:21:22'),
+(55, 15004, 'PNJAM', 'Theo Philus borrowed a book called Yakub dan Esau', 'Vincentius Gerardo', '2020-09-26 20:21:22'),
+(56, 15005, 'PNJAM', 'Bryan Carlo Iskandar borrowed a book called Anak yang Hilang', 'Vincentius Gerardo', '2020-09-26 20:26:47'),
+(57, 14322, 'PNJAM', 'James Bonds borrowed a book called Pesta Kawin di Kana', 'Vincentius Gerardo', '2020-09-26 20:27:51'),
+(58, 14321, 'KMBLI', 'Bryan Carlo Iskandar returned a book called Anak yang Hilang', 'Vincentius Gerardo', '2020-09-27 01:00:09');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `kategori`
+-- Struktur dari tabel `kategori`
 --
 
 CREATE TABLE `kategori` (
@@ -1920,7 +2010,7 @@ CREATE TABLE `kategori` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
--- Dumping data for table `kategori`
+-- Dumping data untuk tabel `kategori`
 --
 
 INSERT INTO `kategori` (`ID_Kategori`, `NamaKategori`, `FlagActive`) VALUES
@@ -1931,7 +2021,7 @@ INSERT INTO `kategori` (`ID_Kategori`, `NamaKategori`, `FlagActive`) VALUES
 -- --------------------------------------------------------
 
 --
--- Table structure for table `login`
+-- Struktur dari tabel `login`
 --
 
 CREATE TABLE `login` (
@@ -1943,16 +2033,16 @@ CREATE TABLE `login` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
--- Dumping data for table `login`
+-- Dumping data untuk tabel `login`
 --
 
 INSERT INTO `login` (`ID_Login`, `Username`, `FullName`, `Password`, `FlagActive`) VALUES
-(1, 'vincentiusg', 'Vincentius Gerardo', '$2y$10$TBTmsUJy8c7trTrtGbLfcePRLDZw/9cn88IkBb.Cw5Bo/mtfTgnMu', 1);
+(1, 'vincentiusg', 'Vincentius Gerardo', '$2y$10$vxocYbNdbZiJWVR/Z6oHfuQ8sLEQahglH0cXBTm57suAV995K2oc.', 1);
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `member`
+-- Struktur dari tabel `member`
 --
 
 CREATE TABLE `member` (
@@ -1964,7 +2054,7 @@ CREATE TABLE `member` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
--- Dumping data for table `member`
+-- Dumping data untuk tabel `member`
 --
 
 INSERT INTO `member` (`ID_Member`, `NamaMember`, `NoHP`, `Alamat`, `FlagActive`) VALUES
@@ -2716,7 +2806,7 @@ INSERT INTO `member` (`ID_Member`, `NamaMember`, `NoHP`, `Alamat`, `FlagActive`)
 -- --------------------------------------------------------
 
 --
--- Table structure for table `peminjaman`
+-- Struktur dari tabel `peminjaman`
 --
 
 CREATE TABLE `peminjaman` (
@@ -2729,7 +2819,7 @@ CREATE TABLE `peminjaman` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
--- Dumping data for table `peminjaman`
+-- Dumping data untuk tabel `peminjaman`
 --
 
 INSERT INTO `peminjaman` (`ID_Peminjaman`, `ID_Buku`, `ID_Member`, `TanggalPinjam`, `TanggalKembali`, `FlagSudahKembali`) VALUES
@@ -17061,88 +17151,108 @@ INSERT INTO `peminjaman` (`ID_Peminjaman`, `ID_Buku`, `ID_Member`, `TanggalPinja
 (14311, 20191457, 16427, '2019-11-16', '2019-11-30', 1),
 (14312, 20191457, 16454, '2020-01-18', '2020-02-01', 0),
 (14313, 20191457, 19735, '2019-11-23', '2019-12-07', 1),
-(14314, 20191458, 15245, '2020-01-11', '2020-01-25', 0);
+(14314, 20191458, 15245, '2020-01-11', '2020-01-25', 0),
+(14315, 20150001, 15001, '2020-09-26', '2020-10-10', 0),
+(14316, 20150001, 15001, '2020-09-26', '2020-10-10', 0),
+(14317, 20150002, 15002, '2020-09-26', '2020-10-10', 0),
+(14318, 20150003, 15003, '2020-09-26', '2020-10-10', 0),
+(14319, 20150004, 15004, '2020-09-26', '2020-10-10', 0),
+(14320, 20150005, 15004, '2020-09-26', '2020-10-10', 0),
+(14321, 20150006, 15005, '2020-09-12', '2020-09-26', 1),
+(14322, 20150007, 20747, '2020-09-26', '2020-10-10', 0);
 
 --
 -- Indexes for dumped tables
 --
 
 --
--- Indexes for table `buku`
+-- Indeks untuk tabel `buku`
 --
 ALTER TABLE `buku`
   ADD PRIMARY KEY (`ID_Buku`);
 
 --
--- Indexes for table `history`
+-- Indeks untuk tabel `denda`
+--
+ALTER TABLE `denda`
+  ADD PRIMARY KEY (`ID_Denda`);
+
+--
+-- Indeks untuk tabel `history`
 --
 ALTER TABLE `history`
   ADD PRIMARY KEY (`ID_History`);
 
 --
--- Indexes for table `kategori`
+-- Indeks untuk tabel `kategori`
 --
 ALTER TABLE `kategori`
   ADD PRIMARY KEY (`ID_Kategori`);
 
 --
--- Indexes for table `login`
+-- Indeks untuk tabel `login`
 --
 ALTER TABLE `login`
   ADD PRIMARY KEY (`ID_Login`),
   ADD UNIQUE KEY `Username` (`Username`) USING HASH;
 
 --
--- Indexes for table `member`
+-- Indeks untuk tabel `member`
 --
 ALTER TABLE `member`
   ADD PRIMARY KEY (`ID_Member`);
 
 --
--- Indexes for table `peminjaman`
+-- Indeks untuk tabel `peminjaman`
 --
 ALTER TABLE `peminjaman`
   ADD PRIMARY KEY (`ID_Peminjaman`);
 
 --
--- AUTO_INCREMENT for dumped tables
+-- AUTO_INCREMENT untuk tabel yang dibuang
 --
 
 --
--- AUTO_INCREMENT for table `buku`
+-- AUTO_INCREMENT untuk tabel `buku`
 --
 ALTER TABLE `buku`
   MODIFY `ID_Buku` int(8) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20201463;
 
 --
--- AUTO_INCREMENT for table `history`
+-- AUTO_INCREMENT untuk tabel `denda`
 --
-ALTER TABLE `history`
-  MODIFY `ID_History` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=51;
+ALTER TABLE `denda`
+  MODIFY `ID_Denda` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
--- AUTO_INCREMENT for table `kategori`
+-- AUTO_INCREMENT untuk tabel `history`
+--
+ALTER TABLE `history`
+  MODIFY `ID_History` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=59;
+
+--
+-- AUTO_INCREMENT untuk tabel `kategori`
 --
 ALTER TABLE `kategori`
   MODIFY `ID_Kategori` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
--- AUTO_INCREMENT for table `login`
+-- AUTO_INCREMENT untuk tabel `login`
 --
 ALTER TABLE `login`
   MODIFY `ID_Login` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
--- AUTO_INCREMENT for table `member`
+-- AUTO_INCREMENT untuk tabel `member`
 --
 ALTER TABLE `member`
   MODIFY `ID_Member` int(6) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20750;
 
 --
--- AUTO_INCREMENT for table `peminjaman`
+-- AUTO_INCREMENT untuk tabel `peminjaman`
 --
 ALTER TABLE `peminjaman`
-  MODIFY `ID_Peminjaman` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14315;
+  MODIFY `ID_Peminjaman` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14323;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
