@@ -1,7 +1,7 @@
 <br><br><br>
 <div class="d-flex justify-content-center">
     <h1 style="font-size:56px;">
-        Welcome <?= $this->session->userdata('fullname') ?>
+        Welcome Back <?= $this->session->userdata('fullname') ?>
         <br>
         <table align="center">
             <tr>
