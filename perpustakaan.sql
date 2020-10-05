@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Waktu pembuatan: 05 Okt 2020 pada 13.07
--- Versi server: 10.4.11-MariaDB
--- Versi PHP: 7.4.4
+-- Generation Time: Oct 05, 2020 at 02:43 PM
+-- Server version: 10.4.11-MariaDB
+-- PHP Version: 7.4.4
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -23,9 +23,9 @@ SET time_zone = "+00:00";
 
 DELIMITER $$
 --
--- Prosedur
+-- Procedures
 --
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_books_cud` (IN `idBuku` INT, IN `namaBuku` TEXT, IN `namaPengarang` TEXT, IN `namaPenerbit` TEXT, IN `tahunTerbit` INT(4), IN `idKlasifikasi` VARCHAR(25), IN `flagPinjam` BOOLEAN, IN `idKategori` INT, IN `idISBN` VARCHAR(13), IN `unitPrice` DECIMAL(18,2), IN `serialNumber` VARCHAR(255), IN `idJilid` INT, IN `currentUser` VARCHAR(255), IN `flag` BOOLEAN)  BEGIN
+CREATE PROCEDURE `sp_books_cud` (IN `idBuku` INT, IN `namaBuku` TEXT, IN `namaPengarang` TEXT, IN `namaPenerbit` TEXT, IN `tahunTerbit` INT(4), IN `idKlasifikasi` VARCHAR(25), IN `flagPinjam` BOOLEAN, IN `idKategori` INT, IN `idISBN` VARCHAR(13), IN `unitPrice` DECIMAL(18,2), IN `serialNumber` VARCHAR(255), IN `idJilid` INT, IN `currentUser` VARCHAR(255), IN `flag` BOOLEAN)  BEGIN
     DECLARE hasil int;
     DECLARE historyDesc text;
     DECLARE hisCode char(5);
@@ -100,42 +100,42 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_books_cud` (IN `idBuku` INT, IN 
     SELECT hasil AS Result;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_book_detail` (IN `idBuku` INT)  BEGIN
+CREATE PROCEDURE `sp_book_detail` (IN `idBuku` INT)  BEGIN
     SELECT a.ID_Buku, a.NamaBuku, a.NamaPengarang, a.NamaPenerbit, a.TahunTerbit, a.ID_Klasifikasi, a.FlagPinjam, a.ID_Kategori, b.NamaKategori, a.ID_ISBN, a.UnitPrice, a.SerialNumber, a.ID_Jilid
 FROM buku a, kategori b
 WHERE a.ID_Kategori = b.ID_Kategori AND
 a.FlagActive = 1 AND a.ID_Buku = idBuku;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_book_get_kategori` ()  BEGIN
+CREATE PROCEDURE `sp_book_get_kategori` ()  BEGIN
 	SELECT ID_Kategori, NamaKategori
     FROM kategori
     WHERE FlagActive = 1;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_book_get_next_id` ()  BEGIN
+CREATE PROCEDURE `sp_book_get_next_id` ()  BEGIN
     SELECT CONCAT(YEAR(NOW()), RIGHT(MAX(ID_Buku)+1,4)) as NewID from buku;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_book_select_all` ()  BEGIN
+CREATE PROCEDURE `sp_book_select_all` ()  BEGIN
     SELECT a.ID_Buku, a.NamaBuku, a.NamaPengarang, a.NamaPenerbit, a.TahunTerbit, a.ID_Klasifikasi, a.FlagPinjam, a.ID_Kategori, b.NamaKategori, a.ID_ISBN, a.UnitPrice, a.SerialNumber, a.ID_Jilid
 FROM buku a, kategori b
 WHERE a.ID_Kategori = b.ID_Kategori AND
 a.FlagActive = 1;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_change_password` (IN `idMember` INT, IN `userName` TEXT, IN `newPassword` TEXT, IN `currentUser` TEXT)  BEGIN
+CREATE PROCEDURE `sp_change_password` (IN `idMember` INT, IN `userName` TEXT, IN `newPassword` TEXT, IN `currentUser` TEXT)  BEGIN
   DECLARE hasil int;
   UPDATE login SET Password = newPassword WHERE Username = userName AND ID_Login = idMember;
   SET hasil = 1;
   SELECT hasil AS Result;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_history_by_selection` (IN `historyType` CHAR(5))  BEGIN
+CREATE PROCEDURE `sp_history_by_selection` (IN `historyType` CHAR(5))  BEGIN
   SELECT * FROM history WHERE RefCode = historyType ORDER BY CreatedDate DESC;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_history_insert` (`historyRefID` INT, `historyRefCode` CHAR(5), `historyDetail` TEXT, `currentUser` VARCHAR(255))  BEGIN
+CREATE PROCEDURE `sp_history_insert` (`historyRefID` INT, `historyRefCode` CHAR(5), `historyDetail` TEXT, `currentUser` VARCHAR(255))  BEGIN
     INSERT INTO history
     (
         RefID,
@@ -152,11 +152,11 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_history_insert` (`historyRefID` 
     );
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_history_select` (IN `historyCode` CHAR(5), IN `historyDetailCode` INT)  BEGIN
+CREATE PROCEDURE `sp_history_select` (IN `historyCode` CHAR(5), IN `historyDetailCode` INT)  BEGIN
     SELECT HistoryDesc, HistoryCode,HistoryDetailCode, CreatedBy, CreatedDate FROM history WHERE HistoryCode = historyCode AND HistoryDetailCode = historyDetailCode ORDER BY ID_History desc;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_login_cud` (IN `idLogin` INT, IN `userName` TEXT, IN `fullName` TEXT, IN `pass` TEXT, IN `flag` BOOLEAN, IN `currentUser` VARCHAR(255))  BEGIN
+CREATE PROCEDURE `sp_login_cud` (IN `idLogin` INT, IN `userName` TEXT, IN `fullName` TEXT, IN `pass` TEXT, IN `flag` BOOLEAN, IN `currentUser` VARCHAR(255))  BEGIN
     DECLARE hasil int;
     DECLARE historyDesc text;
     DECLARE hisCode char(5);
@@ -202,23 +202,23 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_login_cud` (IN `idLogin` INT, IN
     SELECT hasil AS Result;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_login_select_fullname_by_username` (IN `username` VARCHAR(255))  BEGIN
+CREATE PROCEDURE `sp_login_select_fullname_by_username` (IN `username` VARCHAR(255))  BEGIN
     SELECT FullName FROM login WHERE FlagActive = 1 AND Username = username;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_login_select_id_login_by_username` (`username` VARCHAR(255))  BEGIN
+CREATE PROCEDURE `sp_login_select_id_login_by_username` (`username` VARCHAR(255))  BEGIN
     SELECT ID_Login FROM login WHERE FlagActive = 1 AND Username = username;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_login_select_password_by_username` (`username` VARCHAR(255))  BEGIN
+CREATE PROCEDURE `sp_login_select_password_by_username` (`username` VARCHAR(255))  BEGIN
     SELECT Password FROM login WHERE FlagActive = 1 AND Username = username;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_login_select_userdata_by_username` (IN `username` VARCHAR(255))  BEGIN
+CREATE PROCEDURE `sp_login_select_userdata_by_username` (IN `username` VARCHAR(255))  BEGIN
     SELECT ID_Login,Username,FullName FROM login WHERE FlagActive = 1 AND Username = username;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_member_cud` (IN `idMember` INT, IN `NamaMember` TEXT, IN `noHP` VARCHAR(15), IN `alamat` TEXT, IN `currentUser` VARCHAR(255), IN `flagActive` BOOLEAN)  BEGIN
+CREATE PROCEDURE `sp_member_cud` (IN `idMember` INT, IN `NamaMember` TEXT, IN `noHP` VARCHAR(15), IN `alamat` TEXT, IN `currentUser` VARCHAR(255), IN `flagActive` BOOLEAN)  BEGIN
     DECLARE hasil int;
     DECLARE historyDesc text;
     DECLARE hisCode char(5);
@@ -268,19 +268,19 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_member_cud` (IN `idMember` INT, 
     SELECT hasil AS Result;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_member_get_next_id` ()  BEGIN
+CREATE PROCEDURE `sp_member_get_next_id` ()  BEGIN
     SELECT CONCAT(RIGHT(YEAR(NOW()),2), RIGHT(MAX(ID_Member)+1,3)) as NewID from member;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_member_select_all` ()  BEGIN
+CREATE PROCEDURE `sp_member_select_all` ()  BEGIN
     SELECT ID_Member, NamaMember, NoHP, Alamat FROM member WHERE FlagActive = 1;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_member_select_by_id` (`idMember` INT)  BEGIN
+CREATE PROCEDURE `sp_member_select_by_id` (`idMember` INT)  BEGIN
     SELECT ID_Member, NamaMember, NoHP, Alamat FROM member WHERE FlagActive = 1 AND ID_Member = idMember;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_peminjaman` (IN `idPeminjaman` INT, IN `idBuku` INT, IN `idMember` INT, IN `TanggalPinjam` DATE, IN `TanggalKembali` DATE, IN `flagKembali` BIT(1), IN `currentUser` VARCHAR(255))  BEGIN
+CREATE PROCEDURE `sp_peminjaman` (IN `idPeminjaman` INT, IN `idBuku` INT, IN `idMember` INT, IN `TanggalPinjam` DATE, IN `TanggalKembali` DATE, IN `flagKembali` BIT(1), IN `currentUser` VARCHAR(255))  BEGIN
     DECLARE hasil int;
     DECLARE historyDesc text;
     DECLARE hisCode char(5);
@@ -313,7 +313,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_peminjaman` (IN `idPeminjaman` I
     END IF;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_peminjaman_select_all` ()  BEGIN
+CREATE PROCEDURE `sp_peminjaman_select_all` ()  BEGIN
     SELECT 
         aa.ID_Peminjaman, aa.ID_Buku, aa.NamaBuku, aa.ID_Member , bb.NamaMember, aa.TanggalPinjam, aa.TanggalKembali, aa.FlagSudahKembali 
     FROM (
@@ -326,7 +326,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_peminjaman_select_all` ()  BEGIN
     ORDER BY aa.TanggalPinjam DESC;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_peminjaman_select_by_book` (`idBuku` INT)  BEGIN
+CREATE PROCEDURE `sp_peminjaman_select_by_book` (`idBuku` INT)  BEGIN
     SELECT 
         aa.ID_Peminjaman, aa.ID_Buku, aa.NamaBuku, aa.ID_Member , bb.NamaMember, aa.TanggalPinjam, aa.TanggalKembali, aa.FlagSudahKembali 
     FROM (
@@ -341,7 +341,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_peminjaman_select_by_book` (`idB
     ;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_peminjaman_select_by_id_member` (`idMember` INT)  BEGIN
+CREATE PROCEDURE `sp_peminjaman_select_by_id_member` (`idMember` INT)  BEGIN
     SELECT 
         aa.ID_Peminjaman, aa.ID_Buku, aa.NamaBuku, aa.ID_Member , bb.NamaMember, aa.TanggalPinjam, aa.TanggalKembali, aa.FlagSudahKembali 
     FROM (
@@ -355,7 +355,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_peminjaman_select_by_id_member` 
     ORDER BY aa.TanggalPinjam DESC;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_pengembalian` (IN `idPeminjaman` INT, IN `idBuku` INT, IN `memberName` TEXT, IN `returnDate` DATE, IN `isLate` BOOLEAN, IN `totalDays` INT, IN `totalFine` INT, IN `currentUser` TEXT)  BEGIN
+CREATE PROCEDURE `sp_pengembalian` (IN `idPeminjaman` INT, IN `idBuku` INT, IN `memberName` TEXT, IN `returnDate` DATE, IN `isLate` BOOLEAN, IN `totalDays` INT, IN `totalFine` INT, IN `currentUser` TEXT)  BEGIN
     DECLARE hasil int;
     DECLARE historyDesc text;
     DECLARE hisCode char(5);
@@ -378,7 +378,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_pengembalian` (IN `idPeminjaman`
     SELECT hasil AS Result;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_pengembalian_select_book` (IN `idBuku` INT)  BEGIN
+CREATE PROCEDURE `sp_pengembalian_select_book` (IN `idBuku` INT)  BEGIN
   SELECT  c.ID_Peminjaman, c.ID_Member, a.ID_Buku, a.NamaBuku, d.NamaMember, c.TanggalPinjam, c.TanggalKembali, DATE_FORMAT(c.TanggalKembali, "%d-%m-%Y") as TanggalKembaliDisplay
   FROM buku a, kategori b, peminjaman c, member d
   WHERE a.ID_Kategori = b.ID_Kategori
@@ -391,7 +391,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_pengembalian_select_book` (IN `i
   LIMIT 1;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_pengembalian_terlambat` ()  BEGIN
+CREATE PROCEDURE `sp_pengembalian_terlambat` ()  BEGIN
   SELECT a.ID_Denda, d.NamaMember, b.NamaBuku, c.TanggalPinjam, a.TanggalKembali, a.TotalDays, a.TotalDenda
   FROM denda a, buku b, peminjaman c, member d
   WHERE a.ID_Buku = b.ID_Buku
@@ -405,7 +405,7 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
--- Struktur dari tabel `buku`
+-- Table structure for table `buku`
 --
 
 CREATE TABLE `buku` (
@@ -425,7 +425,7 @@ CREATE TABLE `buku` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
--- Dumping data untuk tabel `buku`
+-- Dumping data for table `buku`
 --
 
 INSERT INTO `buku` (`ID_Buku`, `NamaBuku`, `NamaPengarang`, `NamaPenerbit`, `TahunTerbit`, `ID_Klasifikasi`, `FlagPinjam`, `ID_Kategori`, `ID_ISBN`, `UnitPrice`, `SerialNumber`, `ID_Jilid`, `FlagActive`) VALUES
@@ -1899,7 +1899,7 @@ INSERT INTO `buku` (`ID_Buku`, `NamaBuku`, `NamaPengarang`, `NamaPenerbit`, `Tah
 -- --------------------------------------------------------
 
 --
--- Struktur dari tabel `denda`
+-- Table structure for table `denda`
 --
 
 CREATE TABLE `denda` (
@@ -1912,7 +1912,7 @@ CREATE TABLE `denda` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
--- Dumping data untuk tabel `denda`
+-- Dumping data for table `denda`
 --
 
 INSERT INTO `denda` (`ID_Denda`, `ID_Peminjaman`, `ID_Buku`, `TanggalKembali`, `TotalDays`, `TotalDenda`) VALUES
@@ -1921,7 +1921,7 @@ INSERT INTO `denda` (`ID_Denda`, `ID_Peminjaman`, `ID_Buku`, `TanggalKembali`, `
 -- --------------------------------------------------------
 
 --
--- Struktur dari tabel `history`
+-- Table structure for table `history`
 --
 
 CREATE TABLE `history` (
@@ -1934,7 +1934,7 @@ CREATE TABLE `history` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
--- Dumping data untuk tabel `history`
+-- Dumping data for table `history`
 --
 
 INSERT INTO `history` (`ID_History`, `RefID`, `RefCode`, `HistoryDesc`, `CreatedBy`, `CreatedDate`) VALUES
@@ -2000,7 +2000,7 @@ INSERT INTO `history` (`ID_History`, `RefID`, `RefCode`, `HistoryDesc`, `Created
 -- --------------------------------------------------------
 
 --
--- Struktur dari tabel `kategori`
+-- Table structure for table `kategori`
 --
 
 CREATE TABLE `kategori` (
@@ -2010,7 +2010,7 @@ CREATE TABLE `kategori` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
--- Dumping data untuk tabel `kategori`
+-- Dumping data for table `kategori`
 --
 
 INSERT INTO `kategori` (`ID_Kategori`, `NamaKategori`, `FlagActive`) VALUES
@@ -2021,19 +2021,19 @@ INSERT INTO `kategori` (`ID_Kategori`, `NamaKategori`, `FlagActive`) VALUES
 -- --------------------------------------------------------
 
 --
--- Struktur dari tabel `login`
+-- Table structure for table `login`
 --
 
 CREATE TABLE `login` (
   `ID_Login` int(11) NOT NULL,
-  `Username` text DEFAULT NULL,
+  `Username` varchar(500) DEFAULT NULL,
   `FullName` text NOT NULL,
   `Password` text DEFAULT NULL,
   `FlagActive` tinyint(1) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
--- Dumping data untuk tabel `login`
+-- Dumping data for table `login`
 --
 
 INSERT INTO `login` (`ID_Login`, `Username`, `FullName`, `Password`, `FlagActive`) VALUES
@@ -2042,7 +2042,7 @@ INSERT INTO `login` (`ID_Login`, `Username`, `FullName`, `Password`, `FlagActive
 -- --------------------------------------------------------
 
 --
--- Struktur dari tabel `member`
+-- Table structure for table `member`
 --
 
 CREATE TABLE `member` (
@@ -2054,7 +2054,7 @@ CREATE TABLE `member` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
--- Dumping data untuk tabel `member`
+-- Dumping data for table `member`
 --
 
 INSERT INTO `member` (`ID_Member`, `NamaMember`, `NoHP`, `Alamat`, `FlagActive`) VALUES
@@ -2806,7 +2806,7 @@ INSERT INTO `member` (`ID_Member`, `NamaMember`, `NoHP`, `Alamat`, `FlagActive`)
 -- --------------------------------------------------------
 
 --
--- Struktur dari tabel `peminjaman`
+-- Table structure for table `peminjaman`
 --
 
 CREATE TABLE `peminjaman` (
@@ -2819,7 +2819,7 @@ CREATE TABLE `peminjaman` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
--- Dumping data untuk tabel `peminjaman`
+-- Dumping data for table `peminjaman`
 --
 
 INSERT INTO `peminjaman` (`ID_Peminjaman`, `ID_Buku`, `ID_Member`, `TanggalPinjam`, `TanggalKembali`, `FlagSudahKembali`) VALUES
@@ -17166,90 +17166,90 @@ INSERT INTO `peminjaman` (`ID_Peminjaman`, `ID_Buku`, `ID_Member`, `TanggalPinja
 --
 
 --
--- Indeks untuk tabel `buku`
+-- Indexes for table `buku`
 --
 ALTER TABLE `buku`
   ADD PRIMARY KEY (`ID_Buku`);
 
 --
--- Indeks untuk tabel `denda`
+-- Indexes for table `denda`
 --
 ALTER TABLE `denda`
   ADD PRIMARY KEY (`ID_Denda`);
 
 --
--- Indeks untuk tabel `history`
+-- Indexes for table `history`
 --
 ALTER TABLE `history`
   ADD PRIMARY KEY (`ID_History`);
 
 --
--- Indeks untuk tabel `kategori`
+-- Indexes for table `kategori`
 --
 ALTER TABLE `kategori`
   ADD PRIMARY KEY (`ID_Kategori`);
 
 --
--- Indeks untuk tabel `login`
+-- Indexes for table `login`
 --
 ALTER TABLE `login`
   ADD PRIMARY KEY (`ID_Login`),
-  ADD UNIQUE KEY `Username` (`Username`) USING HASH;
+  ADD UNIQUE KEY `Username` (`Username`);
 
 --
--- Indeks untuk tabel `member`
+-- Indexes for table `member`
 --
 ALTER TABLE `member`
   ADD PRIMARY KEY (`ID_Member`);
 
 --
--- Indeks untuk tabel `peminjaman`
+-- Indexes for table `peminjaman`
 --
 ALTER TABLE `peminjaman`
   ADD PRIMARY KEY (`ID_Peminjaman`);
 
 --
--- AUTO_INCREMENT untuk tabel yang dibuang
+-- AUTO_INCREMENT for dumped tables
 --
 
 --
--- AUTO_INCREMENT untuk tabel `buku`
+-- AUTO_INCREMENT for table `buku`
 --
 ALTER TABLE `buku`
   MODIFY `ID_Buku` int(8) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20201463;
 
 --
--- AUTO_INCREMENT untuk tabel `denda`
+-- AUTO_INCREMENT for table `denda`
 --
 ALTER TABLE `denda`
   MODIFY `ID_Denda` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
--- AUTO_INCREMENT untuk tabel `history`
+-- AUTO_INCREMENT for table `history`
 --
 ALTER TABLE `history`
   MODIFY `ID_History` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=59;
 
 --
--- AUTO_INCREMENT untuk tabel `kategori`
+-- AUTO_INCREMENT for table `kategori`
 --
 ALTER TABLE `kategori`
   MODIFY `ID_Kategori` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
--- AUTO_INCREMENT untuk tabel `login`
+-- AUTO_INCREMENT for table `login`
 --
 ALTER TABLE `login`
   MODIFY `ID_Login` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
--- AUTO_INCREMENT untuk tabel `member`
+-- AUTO_INCREMENT for table `member`
 --
 ALTER TABLE `member`
   MODIFY `ID_Member` int(6) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20750;
 
 --
--- AUTO_INCREMENT untuk tabel `peminjaman`
+-- AUTO_INCREMENT for table `peminjaman`
 --
 ALTER TABLE `peminjaman`
   MODIFY `ID_Peminjaman` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14323;
